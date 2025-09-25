@@ -1,0 +1,34 @@
+1) There are 2 types in pipes in angualar
+
+a) built-in pipes
+b) custom pipes
+
+Examples of some of the built ib pipes:
+
+1) datepipe - {{ today | date:'short' }}
+2) UpperCasePipe / LowerCasePipe → text casing - {{ 'angular' | uppercase }} <!-- Output: ANGULAR -->
+3) CurrencyPipe → formats currency values. - {{ 1500 | currency:'USD' }}
+4) DecimalPipe → formats numbers. - {{ 3.14159 | number:'1.2-2' }} <!-- Output: 3.14 -->
+5) PercentPipe → formats numbers as percentages. -> {{ 0.25 | percent }} <!-- Output: 25% -->
+7) JsonPipe → converts an object to JSON. = {{ obj | json }}
+8) SlicePipe → slices arrays or strings. - {{ [1,2,3,4,5] | slice:1:3 }} <!-- Output: [2,3] -->
+
+These topics covered on Pipes
+
+So in short:
+
+Built-in Pipes
+
+Custom Pipes
+
+Pure vs Impure
+
+Pipe Chaining
+
+Parameters in Pipes
+
+Async Pipe
+
+Performance & Best Practices
+
+

@@ -1,0 +1,317 @@
+1) What is change detection in angular ?
+
+In Angular, Change Detection refers to the mechanism Angular uses to check and update the DOM whenever the application state (data, variables, objects) changes.
+
+Put simply:
+➡️ It’s Angular’s way of keeping your UI in sync with your component’s data model.
+
+
+2)  What triggers Change Detection?
+
+-> Events (click, input, keyup, etc.)
+
+-> Promises / Observables (async operations, API responses)
+
+-> setTimeout / setInterval
+
+-> Any code that Angular runs inside Zone.js
+
+3) Change Detection Strategies in Angular.
+
+Angular offers two strategies:
+
+1. Default (CheckAlways)
+
+-> Runs on all components in the tree whenever something triggers CD.
+
+-> Even if data hasn’t changed, Angular still checks the bindings.
+
+-> Works fine for small apps, but can be inefficient in large apps.
+
+2) OnPush (CheckOnce)
+
+Runs CD only when:
+
+ 1. @Input reference changes
+
+ 2. An event originates inside the component
+
+ 3. markForCheck() is called manually
+
+More performant, avoids unnecessary DOM checks.
+
+✅ Why it’s important
+
+ -> Keeps UI reactive (always reflects latest data).
+
+ -> Understanding it helps optimize performance (using OnPush, trackBy, immutability, memoization, etc.).
+
+Essential for debugging why your UI isn’t updating as expected.
+
+
+OnPush Change Detection (CD)
+1️⃣ What is OnPush?
+
+ChangeDetectionStrategy.OnPush tells Angular:
+
+“Only check this component if:
+
+An @Input reference changes, or
+
+An event originates inside this component, or
+
+You manually trigger CD with markForCheck() or detectChanges().”
+
+Angular does NOT check this component every cycle like default CD.
+
+
+2) What is Memoization and Immutability
+
+🔹 Memoization
+
+Definition:
+
+Memoization is an optimization technique where the result of a function is cached based on its inputs. If the same inputs are passed again, the cached result is returned instead of recalculating.
+
+Why it matters in Angular:
+
+Angular templates may call the same function multiple times during change detection.
+
+Without memoization, expensive calculations or filtering logic would re-run unnecessarily.
+
+Memoization ensures performance by avoiding recomputation.
+
+Example
+
+// Expensive function without memoization
+getFilteredList(list: string[]) {
+  console.log("Recalculated...");
+  return list.filter(item => item.startsWith("A"));
+}
+
+// With memoization
+private cache = new Map<string[], string[]>();
+
+getFilteredList(list: string[]) {
+  if (!this.cache.has(list)) {
+    console.log("Recalculated...");
+    this.cache.set(list, list.filter(item => item.startsWith("A")));
+  }
+  return this.cache.get(list)!;
+}
+
+
+🔹 Immutability
+
+Definition: Data should not be mutated directly (changing an array/object in place). Instead, create a new copy with changes.
+
+Why it matters in Angular:
+
+Angular’s default change detection checks object references (shallow check).
+
+If you mutate the object (e.g., push() in an array), Angular may not detect changes in OnPush strategy.
+
+With immutability, new references are created → Angular detects changes automatically.
+
+// ❌ Mutating (may not trigger OnPush detection)
+this.items.push("new item");
+
+// ✅ Immutable update
+this.items = [...this.items, "new item"];
+
+👉 In short:
+
+Memoization = optimize repeated calculations.
+
+Immutability = ensure change detection works efficiently.
+
+2. Detach/Reattach Change Detection (ChangeDetectorRef)
+
+Angular normally runs change detection for the whole component tree after every event (click, HTTP, timer, etc.).
+
+Sometimes, you don’t need Angular to check a component on every cycle → you can detach it.
+
+🔹 Methods
+
+detach(): Stop Angular from running CD on this component.
+
+reattach(): Resume CD when needed.
+
+detectChanges(): Run CD manually for this component and children.
+
+markForCheck(): Mark component to be checked in the next cycle (works with OnPush).
+
+
+import { ChangeDetectorRef, Component } from '@angular/core';
+
+@Component({
+  selector: 'app-heavy',
+  template: ` <div>{{ counter }}</div> `
+})
+export class HeavyComponent {
+  counter = 0;
+
+  constructor(private cd: ChangeDetectorRef) {
+    this.cd.detach(); // Stop automatic CD
+    setInterval(() => {
+      this.counter++;
+      if (this.counter % 5 === 0) {
+        // Update UI every 5 steps
+        this.cd.detectChanges();
+      }
+    }, 1000);
+  }
+}
+
+
+3. Zone.js (and Zone-less Angular)
+
+🔹 What is Zone.js?
+
+Zone.js is a library Angular uses internally to know when to run change detection.
+
+
+🔹 How Does it do it to detect that change detection needs to run ?
+
+It patches async APIs like setTimeout, Promise, addEventListener, so Angular knows:
+
+  🔹 “Something happened → time to check the UI.”
+
+Example:
+
+  setTimeout(() => {
+  this.value = 10; 
+  // Angular auto-runs CD because Zone.js patches setTimeout
+});
+
+🔹 Why is Zone.js inmportant in angular ?
+
+🌍 The Problem Without Zone.js
+
+In a browser, many things happen asynchronously:
+
+ 🔹 setTimeout() fires after some time.
+
+ 🔹Promise.then() runs when the promise resolves.
+
+ 🔹 addEventListener('click', ...) triggers when the user clicks.
+
+ 🔹 XHR / fetch completes when the server responds.
+
+👉 Normally, JavaScript itself doesn’t notify Angular that something changed.
+So if you just updated a variable in one of these async callbacks, Angular’s UI would not automatically update, unless you manually told Angular:
+
+this.changeDetectorRef.detectChanges();
+
+That would be painful.
+
+⚡ What Zone.js Does
+
+Zone.js patches all async APIs in the browser.
+
+That means instead of directly running the native setTimeout / Promise.then, Zone.js wraps them.
+
+Without Zone.js
+
+🔹 JS waits 1s → callback runs → counter increases.
+
+🔹 Angular has no idea → UI doesn’t update.
+
+With Zone.js
+
+🔹 Zone.js intercepts setTimeout.
+
+🔹 When the callback finishes → Zone.js tells Angular:
+
+    “Hey Angular, something async just happened. Run change detection now.”
+
+🔹 Angular runs change detection → sees counter changed → updates UI. ✅
+
+🔄 The Flow
+
+1) Async operation starts → Zone.js wraps it.
+
+2) Async operation finishes → Zone.js gets notified.
+
+3) Zone.js calls Angular’s NgZone → which triggers change detection cycle.
+
+4) Angular updates the DOM if something changed.
+
+Why This Matters
+
+This is the magic that makes Angular apps feel reactive out-of-the-box:
+
+🔹 You don’t call setState() like in React.
+
+🔹 You don’t call scope.$apply() like in old AngularJS.
+
+🔹 You don’t call detectChanges() manually (most of the time).
+
+👉 Thanks to Zone.js, you just update variables, and Angular ensures the UI reflects the changes.
+
+
+Advanced Case – Zone-less Angular
+
+Angular 17+ introduced zone-less mode.
+
+🔹 Here, Angular does not rely on Zone.js.
+
+🔹 Instead, you need signals or manual CD triggers.
+
+🔹 Benefits: performance (no global patching), finer control.
+
+What is NgZone?
+
+🔹 NgZone is an Angular service (class) that wraps Zone.js and manages change detection.
+
+🔹 It’s the “bridge” between Zone.js and Angular’s Change Detection system.
+
+How NgZone Works
+
+1) App runs inside Angular’s zone (called the NgZone).
+
+2) When an async task finishes (timer, promise, event…), Zone.js notifies NgZone.
+
+3) NgZone triggers Angular’s change detection cycle → UI updates.
+
+Example 2 – Running Code Outside Angular Zone
+
+Sometimes you want to run code without triggering CD every time (for performance).
+That’s where NgZone.runOutsideAngular() helps.
+
+constructor(private ngZone: NgZone) {}
+
+startTimer() {
+  // Runs outside Angular → no change detection spam
+  this.ngZone.runOutsideAngular(() => {
+    setInterval(() => {
+      console.log('Tick...'); // Won’t trigger CD
+    }, 1000);
+  });
+}
+
+
+Key Methods of NgZone
+
+🔹 run() → Enter Angular zone (trigger CD).
+
+🔹 runOutsideAngular() → Exit Angular zone (skip CD).
+
+Events:
+
+🔹 onStable → Fires when Angular is stable (no pending async tasks).
+
+🔹 onUnstable → Fires when a new async task starts.
+
+🔹 Zone-less Angular
+
+Angular v16+ introduced zone-less mode (bootstrapApplication(..., { ngZone: 'noop' })).
+
+In this mode, Angular doesn’t use Zone.js → you must trigger CD manually.
+
+bootstrapApplication(AppComponent, {
+  providers: [{ provide: NgZone, useValue: 'noop' }]
+});
+
+// Then use signals or ChangeDetectorRef to update manually
+

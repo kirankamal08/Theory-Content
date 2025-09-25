@@ -1,0 +1,211 @@
+1) what is Hot and cold obeservable in Angular
+
+🔹 1. Cold Observables
+
+A Cold Observable is one that starts producing values only when a subscriber subscribes.
+Each subscriber gets its own independent execution of the observable.
+
+👉 Think of it like watching a YouTube video:
+
+Every person watches the video from the beginning when they hit play.
+
+Each viewer has their own playback; pausing/playing doesn’t affect others.
+
+Characteristics:
+
+Producer starts emitting when subscribe() is called.
+
+Each subscription gets a fresh sequence of values.
+
+Useful for things like HTTP requests, file reading, timers.
+
+
+import { Observable } from 'rxjs';
+
+const cold$ = new Observable(observer => {
+  console.log('Observable started');
+  observer.next(Math.random()); // generates a random number
+  observer.complete();
+});
+
+cold$.subscribe(val => console.log('Subscriber 1:', val));
+cold$.subscribe(val => console.log('Subscriber 2:', val));
+
+
+Output
+
+Observable started
+Subscriber 1: 0.42351  // different number
+Observable started
+Subscriber 2: 0.89234  // different number
+
+
+🔹 2. Hot Observables
+
+A Hot Observable is one that produces values independent of subscriptions.
+Subscribers share the same execution and can “join in the middle.”
+
+👉 Think of it like a live cricket match on TV:
+
+The game is happening whether you watch or not.
+
+If you tune in late, you only see what’s happening now — you missed earlier events.
+
+Characteristics:
+
+Producer emits values even without subscribers.
+
+All subscribers share the same source.
+
+Useful for things like user events, WebSocket connections, mouse movements, real-time streams.
+
+import { interval } from 'rxjs';
+
+const hot$ = interval(1000); // emits increasing numbers every second
+
+hot$.subscribe(val => console.log('Subscriber 1:', val));
+
+setTimeout(() => {
+  hot$.subscribe(val => console.log('Subscriber 2:', val));
+}, 3000);
+
+
+Subscriber 1: 0
+Subscriber 1: 1
+Subscriber 1: 2
+Subscriber 2: 2   // joins in late, starts seeing current values
+Subscriber 1: 3
+Subscriber 2: 3
+Subscriber 1: 4
+Subscriber 2: 4
+
+
+✅ The observable is already “hot” — Subscriber 2 misses the first 3 values because the source was already running.
+
+
+-> Let’s break down why shareReplay prevents a new HTTP request, even if two different subscribers subscribe.
+
+🔹 First, Why Multiple HTTP Requests Happen Normally?
+
+     this.http.get('/api/users');
+
+🔹 HttpClient.get() returns a cold observable.
+
+🔹 Every time you subscribe(), it creates a new execution → new HTTP request.
+
+
+this.userService.getUsers().subscribe(...); // request 1
+this.userService.getUsers().subscribe(...); // request 2
+
+
+Two subscriptions = two network calls 🚨
+
+🔹 What shareReplay Does
+
+shareReplay is an RxJS operator that:
+
+Shares a single execution among multiple subscribers.
+
+ 🔹 Internally, it uses multicasting (like turning a unicast → broadcast).
+
+Replays the last emitted value to new subscribers (so late subscribers don’t trigger new execution).
+
+Uses reference counting to manage the subscription to the source observable.
+
+🔧 Step-by-step with your HTTP request
+
+Service code:
+
+
+this.users$ = this.http.get('/api/users').pipe(
+  shareReplay(1)
+);
+
+
+First subscriber:
+
+1) subscribe() is called.
+
+2) Since no active subscription exists yet, shareReplay subscribes to the source observable (http.get).
+
+3) HTTP request is made ✅
+
+4) Response is emitted → cached inside shareReplay.
+
+Second subscriber:
+
+Another subscribe() is called.
+
+1) This time, shareReplay sees it already has an active execution and cached value.
+
+2) It does NOT re-subscribe to the source observable.
+
+3) It just replays the cached value to the new subscriber.
+
+✅ Result: Both subscribers share the same HTTP response. Only one request is made.
+
+
+🔹 Quick Example (Logging Proof)
+
+const users$ = this.http.get('/api/users').pipe(
+  tap(() => console.log('HTTP executed')), // log when actual request happens
+  shareReplay(1)
+);
+
+users$.subscribe(data => console.log('Subscriber 1:', data));
+users$.subscribe(data => console.log('Subscriber 2:', data));
+
+
+HTTP executed
+Subscriber 1: [...]
+Subscriber 2: [...]
+
+🚨 Without shareReplay, you’d see:
+
+HTTP executed
+Subscriber 1: [...]
+HTTP executed
+Subscriber 2: [...]
+
+
+🔹  Unicast vs Multicast
+
+Unicast (default Observable): each subscriber gets its own execution.
+
+Multicast (Subjects): one producer, many consumers share the same values.
+
+🔹  Subscription lifecycle
+
+🔹  Start: subscribe()
+
+
+RxJS Operators:
+
+
+map, switchMap, mergeMap, concatMap, filter, debounceTime, takeUntil.
+
+🔹 1. map
+
+What it does: Transforms each emitted value into another value.
+
+Analogy: Like applying a function to every item in an array (Array.map).
+
+Use case: Convert HTTP response to a required format.
+
+🔹 2. switchMap
+
+What it does: Maps to an inner observable, cancels the previous one when a new value arrives.
+
+Analogy: Like switching TV channels — only the latest channel plays, old ones are stopped.
+
+Use case: Typeahead search (cancel old HTTP requests if user types again).
+
+import { fromEvent } from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs/operators';
+import { ajax } from 'rxjs/ajax';
+
+fromEvent(document, 'keyup').pipe(
+  debounceTime(500),
+  switchMap(event => ajax.getJSON(`/api/search?q=${event.key}`))
+).subscribe(console.log);
+

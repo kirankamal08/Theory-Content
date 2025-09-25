@@ -1,0 +1,136 @@
+1) Routing & Navigation in Angular
+
+Angular provides a powerful RouterModule to enable navigation between different views (components) without reloading the entire page — this is called Single Page Application (SPA) behavior.
+
+1. RouterModule
+
+The RouterModule is part of @angular/router and is used to configure routes.
+
+It maps URL paths to components.
+
+2) Used when you want routes inside a parent component (like tabs, dashboards).
+
+Example: /dashboard/profile, /dashboard/settings.
+
+Example
+
+const routes: Routes = [
+  { 
+    path: 'dashboard', 
+    component: DashboardComponent,
+    children: [
+      { path: 'profile', component: ProfileComponent },
+      { path: 'settings', component: SettingsComponent }
+    ]
+  }
+];
+
+
+In dashboard.component.html:
+
+<h2>Dashboard</h2>
+<router-outlet></router-outlet> <!-- child route will render here -->
+
+3. Lazy Loading
+
+Instead of loading all modules at startup, load them on demand to improve performance.
+
+Uses loadChildren.
+
+Example
+
+const routes: Routes = [
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
+  }
+];
+
+
+👉 Now the AdminModule is only loaded when the user navigates to /admin.
+
+3) What is Preloading in Angular?
+
+When you set up lazy loading in Angular, feature modules are not loaded until the user navigates to a route that requires them.
+👉 This improves initial load performance, but the first navigation to that lazy module may feel slow (because it needs to fetch the bundle).
+
+Preloading strategies solve this problem.
+
+They allow Angular to load lazy modules in the background after the app is bootstrapped, so that when the user navigates, it’s already cached.
+
+The idea is a balance between:
+
+Faster initial load (thanks to lazy loading).
+
+Smoother navigation (thanks to preloading).
+
+🔹 Built-in Preloading Strategies
+
+Angular provides two main strategies out of the box (in @angular/router):
+
+1. NoPreloading (default)
+
+Lazy-loaded modules are only fetched when their route is visited.
+
+Preloading does not happen at all.
+
+RouterModule.forRoot(routes, { preloadingStrategy: NoPreloading })
+
+
+2. PreloadAllModules
+
+Preloads all lazy-loaded modules in the background immediately after app launch.
+
+Best when your app has few lazy modules and you want fast navigation everywhere.
+
+RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
+
+
+✅ Good for small to medium apps.
+❌ May waste bandwidth if many modules are never visited.
+
+Provide the Strategy:
+
+imports: [
+  RouterModule.forRoot(routes, { preloadingStrategy: CustomPreloadingStrategy })
+]
+
+
+5. Passing Route Params & Query Params
+Route Params (Required values in URL)
+
+Used for dynamic routes, e.g., /users/10.
+
+Define route:
+
+{ path: 'users/:id', component: UserDetailsComponent }
+
+
+Access in component:
+
+constructor(private route: ActivatedRoute) {}
+ngOnInit() {
+  this.route.params.subscribe(params => {
+    console.log(params['id']); // 10
+  });
+}
+
+Query Params (Optional values in URL)
+
+Example: /users?id=10&sort=asc
+
+this.router.navigate(['/users'], { queryParams: { id: 10, sort: 'asc' } });
+
+
+Read in component:
+
+this.route.queryParams.subscribe(params => {
+  console.log(params['id']);   // 10
+  console.log(params['sort']); // asc
+});
+
+
+6. Route Reuse Strategy
+
+
+

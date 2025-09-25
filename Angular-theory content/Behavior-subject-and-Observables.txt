@@ -1,0 +1,25 @@
+1. What is a BehaviorSubject?
+
+BehaviorSubject is a special type of RxJS Subject (from rxjs) that:
+
+Holds a current value (unlike a plain Subject, which only emits values after subscription).
+
+Always emits the latest value to new subscribers immediately when they subscribe.
+
+Useful for maintaining and sharing application state.
+
+import { BehaviorSubject } from 'rxjs';
+
+const subject = new BehaviorSubject<number>(0); // initial value = 0
+
+// First subscriber
+subject.subscribe(val => console.log('Subscriber 1:', val)); 
+// Output: Subscriber 1: 0
+
+subject.next(1); // emit new value
+// Output: Subscriber 1: 1
+
+// Second subscriber (joins later)
+subject.subscribe(val => console.log('Subscriber 2:', val));
+// Output: Subscriber 2: 1 (gets the latest value immediately)
+

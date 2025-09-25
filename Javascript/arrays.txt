@@ -1,0 +1,33 @@
+Important array method used in javascript.
+
+-> sort() -> The sort() method is a built-in function in JavaScript that rearranges the elements of an array in place and returns the sorted array.
+
+Return value:
+
+The same array, but now sorted.
+
+Key Points
+
+sort() modifies the original array; it does not create a new array.
+
+If a compare function is provided, it decides the order using these rules:
+
+Return negative → first element comes before the second
+
+Return positive → first element comes after the second
+
+Return 0 → order stays the same
+
+Works for numbers, strings, and objects.
+
+5️⃣ Important point
+
+The key is:
+
+Negative → first element stays first
+
+Positive → second element moves before the first
+
+Zero → no change
+
+This allows sort() to work for numbers, strings, and objects in a consistent way.

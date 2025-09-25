@@ -1,0 +1,16 @@
+1) how to achiveve state management in angualar using NgRx ?
+
+NgRx is the most popular state management library for Angular apps.
+ It follows the Redux pattern (inspired by Redux in React) and is built on RxJS observables.
+
+ 🔹 NgRx Concepts
+
+1) State – The single source of truth (store).
+
+2) Actions – Plain objects that describe what happened (e.g., [Todos] Add Todo).
+
+3) Reducers – Pure functions that take the current state + action → return new state.
+
+4) Selectors – Functions to get slices of state.
+
+5) Effects – Handle side effects (like API calls) and dispatch new actions.
