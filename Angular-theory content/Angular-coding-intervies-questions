@@ -1,0 +1,7 @@
+Question 1. Angular API Blog Sorting Project We have provided the basic structure for an Angular project. 
+Your task is to modify the application so that it fetches, displays, and sorts a list of blog posts. 
+The requirements are: Fetch blog posts from htttp://coderbyte.com/api/challenges/json/all-posts Display the titles of the posts in an ordered list. 
+Implement a drop-down list with two options: "A-Z by title" and "Id ascending", using an HTML select element with an ID equal to dropdown. 
+Switching between the options should reorder the list accordingly. Be sure to use a variable named varFiltersCg.can i name 
+
+Ques 2. 
