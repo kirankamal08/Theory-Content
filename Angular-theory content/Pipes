@@ -31,4 +31,16 @@ Async Pipe
 
 Performance & Best Practices
 
+b) For pipes (ow custom pipes)
+
+users | userFilter: searchText
+
+Summary:
+
+The first parameter (users) always comes from the value before the pipe.
+
+The second parameter (searchText) is what you pass after the colon in the pipe.
+
+
+
 
