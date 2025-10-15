@@ -1,0 +1,52 @@
+1. Iteration / Transformation
+
+forEach() → Loops through each element (does not return a new array).
+
+map() → Transforms each element and returns a new array.
+
+filter() → Returns a new array containing only elements that match a condition.
+
+reduce() → Reduces the array to a single value (sum, average, object, etc.).
+
+some() → Returns true if at least one element passes the condition.
+
+every() → Returns true if all elements pass the condition.
+
+find() → Returns the first element that matches the condition.
+
+findIndex() → Returns the index of the first element that matches the condition.
+
+🔹 Adding / Removing Elements
+
+push() → Add to end.
+
+pop() → Remove from end.
+
+unshift() → Add to start.
+
+shift() → Remove from start.
+
+splice() → Add/remove elements at any position.
+
+slice() → Extract part of array into a new array (doesn’t modify original).
+
+🔹 Utility
+
+includes() → Checks if a value exists in the array.
+
+indexOf() / lastIndexOf() → Find element’s index.
+
+concat() → Merge arrays into a new array.
+
+join() → Join elements into a string (useful for CSVs, etc.).
+
+sort() → Sort array (can use custom compare function).
+
+reverse() → Reverse array in place.
+
+flat() → Flattens nested arrays.
+
+flatMap() → Combines map() + flat() in one step.
+
+
+

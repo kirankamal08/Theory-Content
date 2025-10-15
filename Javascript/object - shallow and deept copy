@@ -1,0 +1,167 @@
+1. JavaScript Data Types:
+
+In JavaScript, everything is a value, and every value is of a data type.
+These data types are broadly divided into two categories:
+
+-> Primitive Types	Stored directly in memory (the value itself).
+-> Reference Types	Stored as references (memory addresses or pointers to where the actual value lives)
+
+
+2. Primitive Data Types
+
+These are the basic, immutable data types.
+There are 7 of them (as of modern JavaScript):
+
+string, number, boolean, undefined, null, symbol, bigint
+
+
+✅ Key facts about primitives:
+
+Stored directly in the stack (in most JS engines).
+
+When you copy them, you get a new independent value.
+
+They are immutable — you can’t change the actual value, only reassign the variable.
+
+
+let a = 10;
+let b = a; // copy of the value, not reference
+b = 20;
+
+console.log(a); // 10 (unchanged)
+console.log(b); // 20
+
+
+🧠 3. Reference Data Types
+
+Reference types (also called non-primitive types) include:
+
+Object
+
+{ name: "Alice" }
+
+
+Array
+[1, 2, 3]
+
+Function
+function() {}
+
+Date, Map, Set, etc.	special objects
+
+Key facts:
+
+-> Stored in the heap memory.
+
+-> The variable stores a reference (memory address), not the actual value.
+
+-> When you copy or assign, you copy the reference, not the data.
+
+-> Hence, changes via one reference affect the other.
+
+Example:
+
+let person1 = { name: "Alice" };
+let person2 = person1; // copy of reference
+person2.name = "Bob";
+
+console.log(person1.name); // "Bob" (because both point to same object)
+
+
+Copying of objects in JS:
+
+1) Shallow Copy :- A shallow copy creates a new object, but it only copies the top-level properties.
+If any property itself is a reference type (object/array), the reference is copied, not the inner value.
+
+OR
+
+Only the top-level properties (the first layer of the object) are copied into a new object.
+If any property references another object, that reference (i.e., the memory address) is copied — not the actual nested object.
+
+we cam do shallow copy usig spread operator (...) as well as object.assign function. Both produce the same results
+
+
+📦 Example — Step by Step in Memory
+
+NOTE: Both assig and spread operator(...) worksmthe same way
+
+const original = {
+  name: "Alex",
+  address: { city: "Paris", zip: 75000 }
+};
+
+const copy = Object.assign({}, original);
+
+Step 1️⃣ — Memory before copy
+
+| Variable   | Memory Address | Value                             |
+| ---------- | -------------- | --------------------------------- |
+| `original` | #100           | `{ name: "Alex", address: #200 }` |
+| `#200`     | —              | `{ city: "Paris", zip: 75000 }`   |
+
+
+
+Step 2️⃣ — When Object.assign({}, original) runs
+
+A new object {} is created → suppose at address #300.
+
+Then for each key-value pair in original:
+
+"name" is a primitive → "Alex" is copied by value.
+
+"address" is an object → its reference (#200) is copied, not its content.
+
+Now memory looks like this:
+
+Variable	 Memory Address	  Value
+original    	#100	       { name: "Alex", address: #200 }
+copy        	#300	           { name: "Alex", address: #200 }
+#200	         —	               { city: "Paris", zip: 75000 }
+
+
+Step 3️⃣ — Changing nested data
+
+
+copy.address.city = "Lyon";
+
+This modifies the object at #200, which both original.address and copy.address point to.
+
+✅ Result:
+
+console.log(original.address.city); // "Lyon"
+console.log(copy.address.city);     // "Lyon"
+
+So — only top-level properties are copied, deeper levels are shared by reference.
+
+
+2) Deep Copy
+
+A deep copy creates a new object recursively, meaning:
+
+The entire object structure is cloned.
+
+No nested references are shared.
+
+Example:
+
+const original = {
+  name: 'John',
+  address: { city: 'Paris' }
+};
+
+const deep = structuredClone(original); // ✅ modern & safe method
+
+deep.address.city = 'London';
+
+console.log(original.address.city); // 'Paris' ✅ unchanged
+
+
+
+🧩 Memory:
+
+
+original → { name: 'John', address: [ref#2000] → { city: 'Paris' } }
+deep     → { name: 'John', address: [ref#3000] → { city: 'London' } }
+
+
+
