@@ -1,3 +1,4 @@
+
 1) What is change detection in angular ?
 
 In Angular, Change Detection refers to the mechanism Angular uses to check and update the DOM whenever the application state (data, variables, objects) changes.
