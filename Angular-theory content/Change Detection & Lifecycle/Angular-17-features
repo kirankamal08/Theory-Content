@@ -1,0 +1,18 @@
+1) Explain the new template control-flow syntax introduced in Angular 17. 
+the structural directives like *ngIf and *ngFor, How they have been replaced by @if, @forOf, @switch
+
+ -> In Angular, *ngIf and *ngFor are structural directives that run at runtime.
+They’re implemented as TypeScript classes — NgIf and NgForOf — which manipulate the DOM based on the component’s data.
+
+But the new @if and @for syntax introduced in Angular 17 are not directives. They’re built-in control flow syntax handled by the Angular compiler.
+
+Instead of creating directive instances at runtime, the compiler translates @if and @for directly into optimized DOM instructions during compilation.
+
+So, in short —
+*ngIf/*ngFor execute at runtime,
+while @if/@for are handled at compile time, making them faster and more efficient.
+
+
+Tip: End with a benefit line:
+
+“This reduces runtime overhead and improves rendering performance.”
