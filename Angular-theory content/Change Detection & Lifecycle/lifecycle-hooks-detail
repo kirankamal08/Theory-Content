@@ -1,0 +1,50 @@
+what is component's Lifecycle :- A component's lifecycle is the sequence of steps that happen between the component's creation and its destruction.
+Each step represents a different part of Angular's process for rendering components and checking them for updates over time.
+
+ They are implemented as methods on your component class.
+
+ * For the purposes of understanding this lifecycle, you only need to know that Angular walks your application tree from top to bottom, checking template bindings for changes. The lifecycle hooks described run while Angular is doing this traversal. This traversal visits each component exactly once, so you should always avoid making further state changes in the middle of the process.
+
+
+ The key line:
+
+“This traversal visits each component exactly once, so you should always avoid making further state changes in the middle of the process.”
+
+Let’s break it down:
+
+“Visits each component exactly once”
+Angular checks every component one time during a single change detection cycle.
+
+“Avoid making further state changes in the middle of the process”
+This means: don’t modify component data while Angular is already running change detection.
+
+Why? Because if you change data (for example, modify a property or emit an event) during this traversal, Angular would need to re-run change detection again — but it’s already in the middle of checking everything once.
+That could lead to infinite loops, ExpressionChangedAfterItHasBeenCheckedError, or other inconsistent UI states.
+
+ngAfterViewChecked() {
+  this.title = 'Updated title'; // ❌ Bad idea
+}
+
+Here, Angular is already in the middle of checking bindings.
+If you change this.title now, you’re altering state after Angular has already checked this component — it’ll detect the mismatch and throw:
+
+
+Lifecycle hooks:
+
+component creation - Creation- constructor ->  Runs when Angular instantiates the component.
+
+Change
+Detection
+
+-> ngOnInit - Runs once after Angular has initialized all the component's inputs.
+-> ngOnChanges - Runs every time the component's inputs have changed.
+-> ngDoCheck - Runs every time this component is checked for changes.
+-> ngAfterContentInit - Runs once after the component's content has been initialized.
+-> ngAfterContentChecked - Runs every time this component content has been checked for changes.
+-> ngAfterViewInit -	Runs once after the component's view has been initialized.
+-> ngAfterViewChecked - Runs every time the component's view has been checked for changes.
+
+
+Destruction
+
+-> ngOnDestroy - Runs once before the component is destroyed.

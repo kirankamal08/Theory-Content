@@ -16,3 +16,76 @@ while @if/@for are handled at compile time, making them faster and more efficien
 Tip: End with a benefit line:
 
 “This reduces runtime overhead and improves rendering performance.”
+
+
+2) What is the @defer directive (or block) in Angular 17? When would you use it? What are the benefits and any trade-offs?
+
+The @defer block in Angular 17+ enables deferred (lazy) loading of parts of your template.
+It waits for specific triggers — like viewport visibility, user interaction, or browser idle — before loading the content.
+This helps improve app startup performance by loading only what’s needed immediately.
+
+Benefits: Faster startup, smaller bundles, smoother UX.
+Trade-offs: Delayed content and slightly more template complexity.
+
+Example:
+
+<!-- Immediate critical content -->
+<h1>Welcome, {{ user.name }}</h1>
+<p>Here’s your quick summary for today.</p>
+
+<!-- Defer non-critical content -->
+@defer (on idle) {
+  <app-analytics-chart></app-analytics-chart>
+} @placeholder {
+  <p>Preparing analytics...</p>
+} @loading {
+  <p>Loading charts...</p>
+} @error {
+  <p>Failed to load analytics.</p>
+}
+
+
+
+How it works
+
+The dashboard and basic info load instantly.
+
+The <app-analytics-chart> component (maybe large due to chart libraries) loads after the browser becomes idle.
+
+During this wait, Angular shows:
+
+“Preparing analytics…” (placeholder)
+
+Then “Loading charts…” (while fetching module)
+
+Once ready, the chart appears without blocking the main UI.
+
+Scenario 2: E-commerce Product Page
+💡 Problem
+
+Your product page has images, description, and user reviews.
+Reviews component calls an API and can be large.
+You don’t want to fetch reviews until the user scrolls down.
+
+✅ Solution using @defer (on viewport)
+
+product.component.html
+
+<h2>{{ product.name }}</h2>
+<img [src]="product.image" alt="{{ product.name }}" />
+<p>{{ product.description }}</p>
+
+<!-- Defer reviews until visible -->
+@defer (on viewport) {
+  <app-product-reviews [productId]="product.id"></app-product-reviews>
+} @placeholder {
+  <p>Scroll down to see reviews...</p>
+}
+
+How it works
+
+Product info and image load immediately.
+
+Reviews component is only loaded when the user scrolls near it (viewport trigger).
+
+Reduces initial bundle and API calls until actually needed.
