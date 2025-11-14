@@ -1,0 +1,107 @@
+Ques:- What is Event Delegation ?
+And: - Event delegation is a JavaScript pattern that allows you to handle events efficiently by attaching a single event listener to a parent element instead of 
+attaching separate listeners to multiple similar (ex - li) child elements.
+
+The event listener on the parent “delegates” the handling to the appropriate child element based on which element triggered the event.
+
+It works because of event bubbling, where events propagate (bubble) from the target element up through its ancestors in the DOM tree.
+
+
+Key Points:
+
+Attach listener to a parent: Instead of adding listeners to every child, add it to a common parent.
+
+Use event.target: Inside the handler, check which child element actually triggered the event.
+
+Efficient and dynamic: Works even for elements added dynamically after the listener is set.
+
+
+Example:
+
+// HTML
+<ul id="menu">
+  <li>Home</li>
+  <li>About</li>
+  <li>Contact</li>
+</ul>
+
+// JavaScript
+const menu = document.getElementById('menu');
+
+menu.addEventListener('click', function(event) {
+  if (event.target.tagName === 'LI') {
+    alert(`You clicked on ${event.target.textContent}`);
+  }
+});
+
+
+✅ Here’s what happens:
+
+-> Only one event listener is attached to <ul>.
+
+-> When you click any <li>, the event bubbles up to <ul>.
+
+-> event.target tells us which <li> was clicked.
+
+✅ Benefits of event delegation:
+
+Fewer event listeners → better performance, especially for large lists.
+
+Handles dynamically added elements automatically.
+
+Keeps code cleaner and easier to maintain.
+
+---------------------------------------------------------------------------------------------------
+
+1. Event Propagation Phase:
+
+When an event occurs in the DOM, it goes through three phases:
+
+1) Capturing phase (trickling down):
+
+-> The event starts from the window/document and moves down the DOM tree toward the target element.
+-> Rarely used, but you can listen during this phase by passing { capture: true } to addEventListener.
+
+2) Target phase
+
+The event has reached the target element (the actual element that was interacted with).
+
+3) Bubbling phase (bubbling up)
+
+The event bubbles up from the target element through its ancestors to the document.
+
+Most common phase for event delegation.
+
+2. How Event Delegation Uses Bubbling
+
+Event delegation relies on bubbling:
+
+-> You attach a single listener to a parent element.
+
+-> When a child element triggers the event, it bubbles up to the parent.
+
+-> The parent’s listener can inspect event.target to determine which child was interacted with.
+
+Example:
+
+// Example: Delegation relies on bubbling
+const parent = document.getElementById('parent');
+
+parent.addEventListener('click', function(event) {
+  console.log('Clicked element:', event.target);
+});
+
+
+Here:
+
+Even if you click a nested <button> inside parent, the click event bubbles up, so the parent’s listener can catch it.
+
+If bubbling didn’t exist, delegation wouldn’t work.
+
+3. What about capturing?
+
+Technically, delegation could work with capturing, but it’s almost never used.
+
+Capturing would mean the parent catches the event on the way down, before the target element.
+
+Since you usually want to know exactly which child triggered the event, bubbling is more natural.
