@@ -1,0 +1,5 @@
+If they ask what a rendering engine is:
+
+Ivy Renderer ?
+
+In Angular, the rendering engine is the mechanism that compiles and interprets templates to generate DOM elements. It also manages updates to the DOM when change detection runs. Ivy and View Engine are Angular’s two different rendering engines, with Ivy being lighter, faster, and more tree-shakable.

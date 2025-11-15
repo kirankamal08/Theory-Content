@@ -48,3 +48,383 @@ Detection
 Destruction
 
 -> ngOnDestroy - Runs once before the component is destroyed.
+
+
+Important: changing an @Input() causes many lifecycle hooks to fire. They are as:-
+
+⚡ IMPORTANT
+👉 Only initialization hooks run once:
+
+ngOnInit
+
+ngAfterContentInit
+
+ngAfterViewInit
+
+These should not run again when the input changes.
+
+But check hooks run every time:
+
+ngOnChanges
+
+ngDoCheck
+
+ngAfterContentChecked
+
+ngAfterViewChecked
+
+These run on every change detection cycle.
+
+Changing an input triggers a change detection cycle → so these hooks fire again.
+
+✅ These hooks run every single time
+
+These 3 hooks are part of Angular’s change-detection loop:
+
+1️⃣ ngDoCheck
+
+Angular checks the component for changes.
+
+2️⃣ ngAfterContentChecked
+
+Angular checks any projected content (even if you don’t use <ng-content>).
+
+3️⃣ ngAfterViewChecked
+
+Angular checks the component’s own view (template + bindings).
+
+These 3 fire on every change detection cycle, always in this order.
+
+
+🎬 Timeline of All Hooks in the Right Order (Easy Version)
+🔥 Child component hooks run first:
+
+ngOnChanges
+
+ngOnInit
+
+ngDoCheck
+
+♨️ Then projected content is inserted → so these fire:
+
+ngAfterContentInit
+
+ngAfterContentChecked
+
+🔷 Then child view is created → so these fire:
+
+ngAfterViewInit
+
+ngAfterViewChecked
+
+🔶 Then parent hooks run (with fully initialized children ready)
+
+Same sequence for parent
+
+* Why does the parent run LAST?
+
+Because the parent template contains <app-child> —
+and to render the parent template, the child must be READY.
+
+Angular cannot compile the parent until ALL of this is done:
+
+Child class created
+
+Child inputs resolved
+
+Projected content placed
+
+Child view initialized
+
+Only then can the parent become stable.
+
+Q: When a parent compiles, why do child hooks run first?
+
+➡ Because the parent cannot finish rendering until the child is fully initialized.
+Angular resolves children → then parent.
+
+Q: Why ngAfterContentInit comes before ngAfterViewInit?
+
+➡ Because Angular inserts projected content BEFORE it builds the child’s own view.
+
+ContentInit = projected content ready
+
+ViewInit = child’s own DOM ready
+
+
+EventEmitter - A very important concept in angular for child  =>  parent communication:
+
+In Angular:
+
+Child → Parent communication uses EventEmitter
+
+Parent → Child communication uses @Input()
+
+So EventEmitter is how the child sends data or notifies the parent that something happened.
+
+✅ 2. The Syntax at a Glance
+
+Child Component
+
+@Output() sendData = new EventEmitter<string>();
+
+sendToParent() {
+  this.sendData.emit('Hello from child!');
+}
+
+Parent Component
+
+<app-child (sendData)="onChildEvent($event)"></app-child>
+
+Parent TS
+
+onChildEvent(data: string) {
+  console.log(data); // 'Hello from child!'
+}
+
+EventEmitter is a lightweight observable inside the child, and Angular automatically subscribes to it when the parent uses (eventName)="".
+When the child .emit()s, Angular sends the value into the parent’s handler and runs change detection.
+
+Q:- What is template reference varibale in angular ?
+
+A Template Reference Variable in Angular is a way to get a reference to a DOM element or Angular component directly inside your template.
+You define it using the #variableName syntax.
+
+What It Is
+
+A template reference variable gives you access to:
+
+A DOM element
+
+A component instance
+
+A directive instance
+
+An ng-template
+
+…from within the template.
+
+Example:
+
+<input #myInput type="text" />
+<button (click)="showValue(myInput.value)">Show Value</button>
+Here:
+
+#myInput is the template reference variable.
+
+It refers to the <input> element.
+
+We can access its properties (like .value) directly.
+
+Why It’s Useful
+
+You can use template reference variables for:
+
+✔ 1. Accessing DOM elements
+<input #username />
+<button (click)="save(username.value)">Save</button>
+
+✔ 2. Accessing child components
+<app-child #childComp></app-child>
+
+<button (click)="childComp.someMethod()">
+  Call Child Method
+</button>
+
+✔ 3. Accessing directives
+<div #ngIfDirective="ngIf" *ngIf="isVisible">
+  Content
+</div>
+
+✔ 4. Using Template-driven Forms
+<input #name="ngModel" [(ngModel)]="fullName" />
+<p>Valid: {{ name.valid }}</p>
+
+✅ When to Use Template Reference Variables
+
+Use them when you need:
+
+Quick access to view elements (instead of using ViewChild).
+
+To read the value from inputs/textareas.
+
+To trigger methods on a child component.
+
+To reference a template or directive.
+
+🚫 When NOT to Use Them
+
+Avoid using them when:
+
+You need the value inside TypeScript logic a lot → use @ViewChild.
+
+You need the reference before view initialization → also @ViewChild.
+
+✅ Template Reference Variable vs @ViewChild
+
+Both are used to get access to DOM elements, components, or directives —
+BUT they work differently, have different scopes, and are used in different situations.
+
+🔶 1. Template Reference Variable (TRV)
+
+Syntax: #variableName
+
+✔ Works only in the template
+
+You can use the reference only inside the HTML template, not in TypeScript.
+
+✔ Good for quick access
+
+If you only need access directly in the template (e.g., reading an input value), TRVs are simple.
+
+✔ Does NOT interact with component class logic directly
+
+No access inside .ts file.
+
+Example:
+<input #myInput />
+<button (click)="log(myInput.value)">Log Value</button>
+
+🔷 2. @ViewChild
+
+Used in the component class, not inside the template.
+
+✔ Gives you access INSIDE the TypeScript component
+
+You can call methods, read properties, change UI, etc.
+
+✔ Runs after view initialization
+
+You can access it in:
+
+ngAfterViewInit()
+
+or with { static: true }, in ngOnInit()
+
+✔ Good for complex or reusable logic
+Example:
+@ViewChild('myInput') myInput!: ElementRef;
+
+ngAfterViewInit() {
+  console.log(this.myInput.nativeElement.value);
+}
+
+
+And your template:
+
+<input #myInput />
+
+
+Q :- What is thw difference between @ContentChild and @ContentChildren ?
+
+They are Angular decorators used to access projected content —
+i.e., content passed between <ng-content></ng-content> tags from a parent component into a child component.
+
+These are NOT for accessing the component’s own template — that’s what ViewChild / ViewChildren are for.
+
+🔷 1. @ContentChild
+✔ Gets a single projected element
+
+It returns the first matching element, directive, or component inside <ng-content>.
+
+✔ Use when you expect one element.
+Example:
+Parent:
+<app-child>
+  <p #projectedPara>Projected Paragraph</p>
+</app-child>
+
+Child:
+@ContentChild('projectedPara') para!: ElementRef;
+
+ngAfterContentInit() {
+  console.log(this.para.nativeElement.textContent);
+}
+
+
+👉 Finds one element.
+
+
+🔶 2. @ContentChildren
+✔ Gets multiple projected elements
+
+Returns a QueryList (like an array) of ALL matching projected elements.
+
+✔ Use when you expect multiple child nodes.
+Parent:
+<app-child>
+  <p #items>Item 1</p>
+  <p #items>Item 2</p>
+  <p #items>Item 3</p>
+</app-child>
+
+Child:
+@ContentChildren('items') items!: QueryList<ElementRef>;
+
+ngAfterContentInit() {
+  this.items.forEach(item => {
+    console.log(item.nativeElement.textContent);
+  });
+}
+
+
+👉 Finds all 3 paragraphs.
+
+
+🔷 1. @ViewChild
+✔ Gets a single element, component, or directive
+
+Returns the first matching element inside the component’s own template.
+
+✔ You use it when you need only one reference.
+✔ Runs after view initialization (ngAfterViewInit())
+
+
+✅ Example:
+Template (child component or same component):
+<h2 #title>Heading</h2>
+
+Component:
+@ViewChild('title') title!: ElementRef;
+
+ngAfterViewInit() {
+  console.log(this.title.nativeElement.textContent);
+}
+
+
+👉 You get 1 element.
+
+
+🔷 2. @ViewChildren
+✔ Gets multiple elements
+
+Returns a QueryList of ALL matching elements.
+
+✔ You use it when you expect more than one.
+✅ Example:
+Template:
+<p #item>Item 1</p>
+<p #item>Item 2</p>
+<p #item>Item 3</p>
+
+Component:
+@ViewChildren('item') items!: QueryList<ElementRef>;
+
+ngAfterViewInit() {
+  this.items.forEach(i => console.log(i.nativeElement.textContent));
+}
+
+
+👉 You get all 3 items.
+
+
+
+
+
+
+
+
+
+
+
+
